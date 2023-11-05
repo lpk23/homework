@@ -82,9 +82,9 @@ class SportsWalking(Training):
                  action: int,
                  duration: float,
                  weight:int,
-                 height) -> None:
+                 *height) -> None:
         super().__init__(action, duration, weight)
-        self.height = height
+        self.height = height[0][3]
 
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий для спортивной ходьбы."""
@@ -131,7 +131,7 @@ def read_package(workout_type: str, data: list) -> Training:
     weight = data[2]
     d={
         "RUN": Running(action, duration, weight),
-        "WLK": SportsWalking(action, duration, weight, data[3]),
+        "WLK": SportsWalking(action, duration, weight, data),
         "SWM": Swimming(action,duration,weight,data[3],data[4])
     }
     return d[workout_type]
