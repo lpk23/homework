@@ -1,7 +1,12 @@
 class InfoMessage:
     """Информационное сообщение о тренировке."""
 
-    def __init__(self, training_type: str, duration: float, distance: float, speed: float, calories: float):
+    def __init__(self,
+                 training_type: str,
+                 duration: float,
+                 distance: float,
+                 speed: float,
+                 calories: float):
         self.training_type = training_type
         self.duration = duration
         self.distance = distance
@@ -54,7 +59,11 @@ class Training:
 
     def show_training_info(self) -> InfoMessage:
         """Вернуть информационное сообщение о выполненной тренировке."""
-        return InfoMessage(self.__class__.__name__,self.duration,self.get_distance(),self.get_mean_speed(),self.get_spent_calories())
+        return InfoMessage(self.__class__.__name__,
+                           self.duration,
+                           self.get_distance(),
+                           self.get_mean_speed(),
+                           self.get_spent_calories())
 
 
 class Running(Training):
@@ -67,7 +76,7 @@ class Running(Training):
         """Получить количество затраченных калорий для бега."""
         if self.duration > 0:
             calories = ((self.CALORIES_MEAN_SPEED_MULTIPLIER * self.get_mean_speed() + self.CALORIES_MEAN_SPEED_SHIFT)
-                        * self.weight / self.M_IN_KM * (self.duration*60))
+                        * self.weight / self.M_IN_KM * (self.duration * 60))
             return calories
         return 0
 
@@ -81,8 +90,8 @@ class SportsWalking(Training):
     def __init__(self,
                  action: int,
                  duration: float,
-                 weight:int,
-                 height) -> None:
+                 weight: int,
+                 height: float) -> None:
         super().__init__(action, duration, weight)
         self.height = height
 
@@ -92,7 +101,7 @@ class SportsWalking(Training):
             speed_in_meters_per_sec = self.get_mean_speed() / 3.6
             calories = ((self.CALORIES_WEIGHT_COEFFICIENT * self.weight +
                          (speed_in_meters_per_sec ** 2 / self.height) * self.CALORIES_SPEED_COEFFICIENT * self.weight)
-                        * (self.duration*60))
+                        * (self.duration * 60))
             return calories
         return 0
 
@@ -105,15 +114,14 @@ class Swimming(Training):
                  duration: float,
                  weight: float,
                  length_pool: float,
-                 count_pool: int):
+                 count_pool: float):
         super().__init__(action, duration, weight)
-        self.length_pool = length_pool
-        self.count_pool = count_pool
+        self.length_pool, self.count_pool = length_pool, count_pool
 
     def get_mean_speed(self) -> float:
         """Получить среднюю скорость плаванья."""
         if self.duration > 0:
-            return self.length_pool * self.count_pool / self.M_IN_KM / (self.duration)
+            return self.length_pool * self.count_pool / self.M_IN_KM / self.duration
         return 0
 
     def get_spent_calories(self) -> float:
@@ -126,29 +134,13 @@ class Swimming(Training):
 
 def read_package(workout_type: str, data: list) -> Training:
     """Прочитать данные полученные от датчиков."""
-    action = data[0]
-    duration = data[1]
-    weight = data[2]
-    d={
-        "RUN": Running(action, duration, weight),
-        "WLK": SportsWalking(action, duration, weight, data[3]),
-        "SWM": Swimming(action,duration,weight,data[3],data[4])
-    }
-    return d[workout_type]
-    # if workout_type == 'SWM':
-    #     length_pool = data[3]
-    #     count_pool = data[4]
-    #     return Swimming(action, duration, weight, length_pool, count_pool)
-    # elif workout_type == 'WLK':
-    #     height = data[3]
-    #     return SportsWalking(action, duration, weight, height)
-    # elif workout_type == 'RUN':
-    #     return Running(action, duration, weight)
+    type_class = {'SWM': Swimming, 'RUN': Running, 'WLK': SportsWalking}
+    return type_class[workout_type](*data)
 
 
 def main(training: Training) -> None:
     """Главная функция."""
-    info=training.show_training_info()
+    info = training.show_training_info()
     print(info.get_message())
 
 
@@ -156,7 +148,7 @@ if __name__ == '__main__':
     packages = [
         ('SWM', [720, 1, 80, 25, 40]),
         ('RUN', [15000, 1, 75]),
-        ('WLK', [9000, 1, 75, 180]),
+        ('WLK', [9000, 1, 75, 180])
     ]
 
     for workout_type, data in packages:
