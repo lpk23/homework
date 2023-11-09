@@ -27,6 +27,7 @@ class Training:
     LEN_STEP = 0.65
     LEN_STROKE = 1.38
     M_IN_KM = 1000
+    MIN_IN_H = 60
 
     def __init__(self,
                  action: int,
@@ -78,7 +79,7 @@ class Running(Training):
             return ((self.CALORIES_MEAN_SPEED_MULTIPLIER
                      * self.get_mean_speed()
                      + self.CALORIES_MEAN_SPEED_SHIFT)
-                    * self.weight / self.M_IN_KM * (self.duration * 60))
+                    * self.weight / self.M_IN_KM * (self.duration * self.MIN_IN_H))
         return 0
 
 
@@ -87,6 +88,7 @@ class SportsWalking(Training):
 
     CALORIES_WEIGHT_COEFFICIENT = 0.035
     CALORIES_SPEED_COEFFICIENT = 0.029
+    KMH_IN_MS = 0.278
 
     def __init__(self,
                  action: int,
@@ -99,18 +101,19 @@ class SportsWalking(Training):
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий для спортивной ходьбы."""
         if self.duration > 0:
-            speed_in_meters_per_sec = self.get_mean_speed() / 3.6
+            speed_in_meters_per_sec = self.get_mean_speed() / self.KMH_IN_MS
             return ((self.CALORIES_WEIGHT_COEFFICIENT
                      * self.weight
-                     + (speed_in_meters_per_sec ** 2 / self.height)
+                     + (speed_in_meters_per_sec ** 2 / self.height/100)
                      * self.CALORIES_SPEED_COEFFICIENT * self.weight)
-                    * (self.duration * 60))
+                    * (self.duration * self.MIN_IN_H))
         return 0
 
 
 class Swimming(Training):
     """Тренировка: плавание."""
     CALORIES_MEAN_SPEED_SHIFT = 1.1
+    MULTIPLIER_SPEED = 2
 
     def __init__(self, action: int,
                  duration: float,
@@ -133,7 +136,7 @@ class Swimming(Training):
         """Получить количество затраченных калорий для плаванья."""
         if self.duration > 0:
             return ((self.get_mean_speed()
-                     + self.CALORIES_MEAN_SPEED_SHIFT) * 2
+                     + self.CALORIES_MEAN_SPEED_SHIFT) * self.MULTIPLIER_SPEED
                     * self.weight * self.duration)
         return 0
 
