@@ -27,7 +27,7 @@ class Training:
     LEN_STEP = 0.65
     LEN_STROKE = 1.38
     M_IN_KM = 1000
-    MIN_IN_H = 60
+    H_IN_M = 60
 
     def __init__(self,
                  action: int,
@@ -41,10 +41,7 @@ class Training:
     def get_distance(self) -> float:
         """Получить дистанцию в км."""
         if self.action >= 0:
-            if isinstance(self, Swimming):
-                distance = self.action * self.LEN_STROKE / self.M_IN_KM
-            else:
-                distance = self.action * self.LEN_STEP / self.M_IN_KM
+            distance = self.action * self.LEN_STEP / self.M_IN_KM
             return distance
         return 0
 
@@ -79,7 +76,8 @@ class Running(Training):
             return ((self.CALORIES_MEAN_SPEED_MULTIPLIER
                      * self.get_mean_speed()
                      + self.CALORIES_MEAN_SPEED_SHIFT)
-                    * self.weight / self.M_IN_KM * (self.duration * self.MIN_IN_H))
+                    * self.weight / self.M_IN_KM
+                    * (self.duration * self.H_IN_M))
         return 0
 
 
@@ -89,6 +87,8 @@ class SportsWalking(Training):
     CALORIES_WEIGHT_COEFFICIENT = 0.035
     CALORIES_SPEED_COEFFICIENT = 0.029
     KMH_IN_MS = 0.278
+    SM_IN_M = 100
+    COFF_SPEED = 2
 
     def __init__(self,
                  action: int,
@@ -101,12 +101,14 @@ class SportsWalking(Training):
     def get_spent_calories(self) -> float:
         """Получить количество затраченных калорий для спортивной ходьбы."""
         if self.duration > 0:
-            speed_in_meters_per_sec = self.get_mean_speed() / self.KMH_IN_MS
+            speed_in_meters_per_sec = self.get_mean_speed() * self.KMH_IN_MS
+            height_in_meter = self.height / self.SM_IN_M
             return ((self.CALORIES_WEIGHT_COEFFICIENT
                      * self.weight
-                     + (speed_in_meters_per_sec ** 2 / self.height/100)
+                     + (speed_in_meters_per_sec ** self.COFF_SPEED
+                        / height_in_meter)
                      * self.CALORIES_SPEED_COEFFICIENT * self.weight)
-                    * (self.duration * self.MIN_IN_H))
+                    * (self.duration * self.H_IN_M))
         return 0
 
 
@@ -114,6 +116,8 @@ class Swimming(Training):
     """Тренировка: плавание."""
     CALORIES_MEAN_SPEED_SHIFT = 1.1
     MULTIPLIER_SPEED = 2
+
+    LEN_STEP = 1.38
 
     def __init__(self, action: int,
                  duration: float,
